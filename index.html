@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Article Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07080c;--bg2:#0c1018;--bg3:#121824;--bg4:#1a2235;--border:#1c2840;--border2:#263550;--red:#e63946;--red2:#c1121f;--blue:#4cc9f0;--green:#06d6a0;--gold:#ffd60a;--purple:#7209b7;--text:#e2e8f4;--muted:#4a5a72;--muted2:#7a8ea8;--font:'Barlow',sans-serif;--cond:'Barlow Condensed',sans-serif;--mono:'JetBrains Mono',monospace;--r:10px;--r2:14px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,.008) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,.008) 40px);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+input,select,textarea{background:var(--bg3);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px 11px;font-size:13px;width:100%;outline:none;font-family:var(--font);transition:border-color .18s,box-shadow .18s}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(114,9,183,.15)}
+input[type=color]{height:38px;padding:3px 5px;cursor:pointer}
+input[type=file]{padding:6px 8px;font-size:12px}
+select option{background:var(--bg3)}
+label{display:block;font-size:.68rem;font-weight:700;color:var(--muted2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;font-family:var(--cond)}
+button{cursor:pointer;border:none;border-radius:7px;padding:8px 16px;font-size:13px;font-weight:700;transition:.18s;font-family:var(--cond);letter-spacing:.4px}
+.btn-purple{background:var(--purple);color:#fff}.btn-purple:hover{opacity:.85;transform:translateY(-1px)}
+.btn-blue{background:var(--blue);color:#07080c}.btn-blue:hover{opacity:.85;transform:translateY(-1px)}
+.btn-green{background:var(--green);color:#07080c}.btn-green:hover{opacity:.85;transform:translateY(-1px)}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:var(--red2);transform:translateY(-1px)}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--muted2)}.btn-ghost:hover{background:var(--bg3);color:var(--text);border-color:var(--muted2)}
+.btn-sm{padding:5px 11px;font-size:12px}.btn-xs{padding:3px 8px;font-size:11px}
+button:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+.topbar{background:linear-gradient(90deg,#060810,#0c1018);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;gap:14px;height:56px;position:sticky;top:0;z-index:200;box-shadow:0 2px 24px rgba(0,0,0,.7)}
+.logo{font-family:var(--cond);font-weight:900;font-size:1.25rem;color:#b47ffa;letter-spacing:.5px;display:flex;align-items:center;gap:9px;white-space:nowrap}
+.logo img{height:26px;max-width:120px;object-fit:contain;border-radius:4px}
+.topbar-center{flex:1;display:flex;justify-content:center}
+.nav-pills{display:flex;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:4px;flex-wrap:wrap}
+.nav-pill{padding:6px 16px;border-radius:6px;font-family:var(--cond);font-size:.75rem;font-weight:700;letter-spacing:.3px;text-transform:uppercase;color:var(--muted2);cursor:pointer;transition:.15s;border:none;background:transparent}
+.nav-pill.active{background:var(--purple);color:#fff;box-shadow:0 2px 8px rgba(114,9,183,.4)}
+.nav-pill:hover:not(.active){color:var(--text);background:var(--bg4)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+#auth-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);display:inline-block}
+#auth-dot.on{background:var(--green);box-shadow:0 0 6px var(--green)}
+@keyframes fadein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.main{padding:20px;position:relative;z-index:1;max-width:1500px;margin:0 auto}
+.page{display:none}.page.active{display:block;animation:fadein .2s ease}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:18px;position:relative;overflow:hidden;margin-bottom:16px}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--purple),transparent);opacity:.5}
+.card-title{font-family:var(--cond);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted2);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.card-title .ct-right{margin-left:auto;display:flex;gap:5px;align-items:center}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.form-group{margin-bottom:10px}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:6px}
+.stat-box{background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--border);border-radius:var(--r2);padding:14px;text-align:center}
+.stat-box .n{font-family:var(--cond);font-size:1.9rem;font-weight:900;color:#b47ffa;line-height:1}
+.stat-box .l{font-size:.6rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.7px;margin-top:4px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;background:rgba(114,9,183,.15);border:1px solid rgba(114,9,183,.3);border-radius:12px;font-size:.62rem;font-family:var(--cond);font-weight:800;color:#b47ffa;letter-spacing:.4px}
+.compose-layout{display:grid;grid-template-columns:1fr 380px;gap:18px}
+@media (max-width:980px){.compose-layout{grid-template-columns:1fr}}
+.thumb-preview-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center}
+.thumb-preview-wrap canvas{max-width:100%;border-radius:7px;background:#000;box-shadow:0 6px 20px rgba(0,0,0,.6)}
+.thumb-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.thumb-actions button{flex:1;font-size:.68rem}
+.gen-status{font-size:.68rem;color:var(--muted2);text-align:center;margin-top:6px;min-height:16px;font-family:var(--mono)}
+.gen-status.loading{color:var(--blue)}.gen-status.done{color:var(--green)}.gen-status.error{color:var(--red)}
+#post-body{min-height:420px;font-family:var(--mono);font-size:12.5px;line-height:1.5;resize:vertical}
+.seo-row{display:flex;gap:14px;font-size:.72rem;color:var(--muted2);margin-top:8px;flex-wrap:wrap}
+.seo-row b{color:var(--text)}
+.logo-preview-box{display:flex;align-items:center;gap:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px}
+.logo-preview-box img{max-height:60px;max-width:160px;object-fit:contain;background:#000;border-radius:6px;padding:4px}
+.ai-key-row{border:1px solid var(--bg4);border-radius:8px;padding:10px;margin-bottom:8px;background:rgba(255,255,255,.02)}
+.toasts{position:fixed;bottom:16px;right:16px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 16px;font-size:.8rem;box-shadow:0 6px 20px rgba(0,0,0,.5);max-width:320px}
+.toast.s{border-color:rgba(6,214,160,.4);color:var(--green)}
+.toast.e{border-color:rgba(230,57,70,.4);color:var(--red)}
+.toast.w{border-color:rgba(255,214,10,.4);color:var(--gold)}
+.toast.i{border-color:rgba(76,201,240,.4);color:var(--blue)}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.2);border-top-color:#b47ffa;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-1px}
+.helptext{font-size:.72rem;color:var(--muted2);line-height:1.5}
+.infobox{background:rgba(114,9,183,.06);border:1px solid rgba(114,9,183,.2);border-radius:8px;padding:12px;margin-bottom:14px;font-size:.78rem}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo" id="topbar-logo">🤖 AI Article Studio</div>
+  <div class="topbar-center">
+    <div class="nav-pills">
+      <button class="nav-pill active" onclick="showPage('dashboard')">Dashboard</button>
+      <button class="nav-pill" onclick="showPage('compose')">Compose</button>
+      <button class="nav-pill" onclick="showPage('settings')">Settings</button>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span id="auth-dot"></span>
+    <span id="auth-label" style="font-size:.75rem;color:var(--muted2)">Not signed in</span>
+    <button class="btn-ghost btn-xs" id="auth-btn" onclick="handleAuth()">Sign in</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ═══ DASHBOARD ═══ -->
+  <div class="page active" id="page-dashboard">
+    <div class="stats-row">
+      <div class="stat-box"><div class="n" id="st-posts">0</div><div class="l">Articles Published</div></div>
+      <div class="stat-box"><div class="n" id="st-keys">0</div><div class="l">AI Keys Configured</div></div>
+      <div class="stat-box"><div class="n" id="st-blogger">—</div><div class="l">Blogger Status</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title">🤖 AI Writing Engine
+          <span class="ct-right" id="ds-status-badge"><span class="badge">NOT CONFIGURED</span></span>
+        </div>
+        <div id="ds-engine-status" style="font-size:.76rem;color:var(--muted2)">Add an NVIDIA API key in Settings → AI Engine to enable article generation.</div>
+        <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn-purple btn-xs" onclick="showPage('settings')">⚙ Configure AI</button>
+          <button class="btn-ghost btn-xs" onclick="testAllAiKeys()">🧪 Test All Keys</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📤 Blogger Connection</div>
+        <div id="blogger-status-text" style="font-size:.76rem;color:var(--muted2)">Sign in and set your Blog ID in Settings to enable auto-posting.</div>
+        <div style="display:flex;gap:7px;margin-top:10px;flex-wrap:wrap">
+          <button class="btn-purple btn-xs" onclick="showPage('settings')">⚙ Configure Blogger</button>
+          <button class="btn-ghost btn-xs" onclick="handleAuth()" id="dash-auth-btn">Sign in</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🖼 Your Logo</div>
+      <div class="logo-preview-box">
+        <img id="dash-logo-preview" src="" style="display:none">
+        <div id="dash-logo-empty" style="color:var(--muted2);font-size:.78rem">No logo uploaded yet — thumbnails will be generated without a logo overlay.</div>
+        <button class="btn-ghost btn-xs" style="margin-left:auto" onclick="showPage('settings')">⚙ Add / Change Logo</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">✨ Ready to write?</div>
+      <p class="helptext" style="margin-bottom:10px">Give it a title or topic, pick a tone, and let the AI draft a natural, human-sounding article — then generate a branded thumbnail and publish straight to Blogger.</p>
+      <button class="btn-purple" onclick="showPage('compose')">✍️ Start a New Article</button>
+    </div>
+  </div>
+
+  <!-- ═══ COMPOSE ═══ -->
+  <div class="page" id="page-compose">
+    <div class="compose-layout">
+      <div>
+        <div class="card">
+          <div class="card-title">✍️ Article Details</div>
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" id="a-title" placeholder="e.g. 7 Ways to Cut Your Grocery Bill Without Clipping a Single Coupon">
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Topic / What it's about</label>
+              <input type="text" id="a-topic" placeholder="e.g. practical grocery-saving habits for busy families">
+            </div>
+            <div>
+              <label>Target audience (optional)</label>
+              <input type="text" id="a-audience" placeholder="e.g. busy parents on a budget">
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Tone</label>
+              <input type="text" id="a-tone" placeholder="e.g. warm, witty, conversational">
+            </div>
+            <div>
+              <label>Keywords to include (optional, comma-separated)</label>
+              <input type="text" id="a-keywords" placeholder="e.g. grocery budget, meal planning">
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Length</label>
+              <select id="a-length">
+                <option value="short">Short — ~400 words</option>
+                <option value="medium" selected>Medium — ~800 words</option>
+                <option value="long">Long — ~1300 words</option>
+                <option value="xl">Extra Long — ~1800 words</option>
+              </select>
+            </div>
+            <div>
+              <label>Labels / Tags (comma-separated)</label>
+              <input type="text" id="a-labels" placeholder="e.g. budgeting, lifestyle">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+            <button class="btn-purple" id="ds-gen-btn" onclick="generateArticle()">🤖 Generate Article</button>
+            <button class="btn-ghost btn-sm" onclick="clearArticle()">🗑 Clear</button>
+          </div>
+          <div class="gen-status" id="article-gen-status"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📝 Article Body (HTML)
+            <span class="ct-right"><button class="btn-ghost btn-xs" onclick="copyArticleHtml()">📋 Copy HTML</button></span>
+          </div>
+          <textarea id="post-body" placeholder="Generated article will appear here — or write/paste your own."></textarea>
+          <div class="seo-row">
+            <span><b id="seo-words">0</b> words</span>
+            <span><b id="seo-read">0</b> min read</span>
+            <span><b id="seo-chars">0</b> characters</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📤 Publish to Blogger</div>
+          <div class="form-row">
+            <div>
+              <label>Status</label>
+              <select id="post-status"><option value="DRAFT">Save as Draft</option><option value="LIVE">Publish Live</option></select>
+            </div>
+            <div>
+              <label>Insert thumbnail at top of post?</label>
+              <select id="post-insert-thumb"><option value="yes">Yes</option><option value="no">No</option></select>
+            </div>
+          </div>
+          <button class="btn-red" onclick="postToBlogger()">📤 Publish</button>
+          <div class="gen-status" id="publish-status"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title">🖼 Thumbnail Studio</div>
+          <div class="thumb-preview-wrap">
+            <canvas id="thumb-canvas" width="800" height="450"></canvas>
+          </div>
+          <div class="form-row" style="margin-top:10px">
+            <div><label>Background Color 1</label><input type="color" id="tb-color1" value="#12071f"></div>
+            <div><label>Background Color 2</label><input type="color" id="tb-color2" value="#3a0d5c"></div>
+          </div>
+          <div class="form-group">
+            <label>Background Image URL (optional — must allow cross-origin loading)</label>
+            <input type="text" id="tb-bg-url" placeholder="https://example.com/photo.jpg">
+          </div>
+          <div class="form-row">
+            <div>
+              <label>Logo Position</label>
+              <select id="tb-logo-pos">
+                <option value="br">Bottom Right</option>
+                <option value="bl">Bottom Left</option>
+                <option value="tr">Top Right</option>
+                <option value="tl">Top Left</option>
+                <option value="none">No Logo</option>
+              </select>
+            </div>
+            <div>
+              <label>Show Title Text</label>
+              <select id="tb-show-title"><option value="yes">Yes</option><option value="no">No</option></select>
+            </div>
+          </div>
+          <button class="btn-purple btn-sm" style="width:100%" onclick="renderThumbnail()">🎨 Generate Thumbnail</button>
+          <div class="thumb-actions">
+            <button class="btn-blue btn-xs" onclick="downloadThumbnail()">⬇ Download</button>
+            <button class="btn-green btn-xs" onclick="uploadThumbnailToImgbb()">☁ Upload to imgbb</button>
+          </div>
+          <div class="gen-status" id="thumb-status"></div>
+          <div class="form-group" style="margin-top:10px">
+            <label>Hosted Thumbnail URL (after upload)</label>
+            <input type="text" id="thumb-hosted-url" placeholder="Will fill in after uploading to imgbb" readonly>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SETTINGS ═══ -->
+  <div class="page" id="page-settings">
+
+    <div class="card">
+      <div class="card-title">🔑 Blogger / Google OAuth</div>
+      <div class="form-row">
+        <div><label>Google OAuth Client ID</label><input type="text" id="cfg-clientid" placeholder="xxx.apps.googleusercontent.com"></div>
+        <div><label>Blogger Blog ID</label><input type="text" id="cfg-blogid" placeholder="1234567890123456789"></div>
+      </div>
+      <p class="helptext">Create an OAuth Client ID at console.cloud.google.com (APIs &amp; Services → Credentials → OAuth Client ID → Web application), add this page's URL under Authorized JavaScript origins, and enable the Blogger API v3. Your Blog ID is in Blogger → Settings → Basic scroll down, or in your dashboard URL.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">☁ Image Storage (imgbb)</div>
+      <div class="form-group"><label>imgbb API Key</label><input type="text" id="cfg-imgbb" placeholder="Get free at api.imgbb.com"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🖼 Your Logo</div>
+      <div class="logo-preview-box" style="margin-bottom:12px">
+        <img id="cfg-logo-preview" src="" style="display:none">
+        <div id="cfg-logo-empty" style="color:var(--muted2);font-size:.78rem">No logo uploaded.</div>
+        <button class="btn-ghost btn-xs" style="margin-left:auto" onclick="removeLogo()">🗑 Remove</button>
+      </div>
+      <div class="form-group">
+        <label>Upload Logo Image (stored locally in your browser)</label>
+        <input type="file" id="cfg-logo-file" accept="image/*" onchange="onLogoFileChange(event)">
+      </div>
+      <p class="helptext">Your logo appears in the topbar and gets drawn onto generated thumbnails. It's stored only in this browser (localStorage) — nothing is uploaded anywhere until you publish a thumbnail.</p>
+    </div>
+
+    <div class="card" style="border-color:rgba(114,9,183,.3)">
+      <div class="card-title" style="color:#b47ffa">🤖 AI Engine — NVIDIA (build.nvidia.com)
+        <span class="ct-right"><span id="ds-cfg-badge" class="badge">NOT CONFIGURED</span></span>
+      </div>
+      <div class="infobox">
+        <strong style="color:#b47ffa;font-family:var(--cond)">How this works</strong>
+        <span style="color:var(--muted2)"> Add one or more free/paid NVIDIA NIM API keys from build.nvidia.com below. If one is out of quota or temporarily overloaded, Article Studio automatically falls back to the next key in your list — use ⬆⬇ to set priority.</span>
+      </div>
+      <div id="ai-keys-list"></div>
+      <button class="btn-purple btn-sm" onclick="addAiKey()" style="margin-bottom:14px">➕ Add NVIDIA API Key</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-ghost btn-sm" onclick="testAllAiKeys()">🧪 Test All Keys</button>
+      </div>
+      <div id="ai-test-all-result" style="font-size:.72rem;color:var(--muted2);margin-top:8px;font-family:var(--mono);min-height:14px"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">✒ Default Article Style</div>
+      <div class="form-group">
+        <label>Default Tone (used when the Tone field in Compose is left blank)</label>
+        <input type="text" id="cfg-default-tone" placeholder="e.g. warm, confident, conversational — like a knowledgeable friend">
+      </div>
+      <div class="form-group">
+        <label>Write in a human, natural voice (recommended)</label>
+        <select id="cfg-humanize"><option value="yes">Yes — actively avoid AI-sounding phrasing</option><option value="no">No — just write normally</option></select>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚙ Proxy Endpoint</div>
+      <div class="form-group">
+        <label>API Proxy URL <span style="color:var(--muted2);font-weight:400">— your Vercel proxy (needed to avoid browser CORS errors calling NVIDIA directly)</span></label>
+        <input type="text" id="cfg-proxy-url" placeholder="https://your-proxy.vercel.app/api/deepseek">
+      </div>
+      <p class="helptext">If you already deployed the proxy for another dashboard, you can reuse the exact same URL here — it works for any NVIDIA API key.</p>
+    </div>
+
+    <button class="btn-purple" onclick="saveSettings()">💾 Save Settings</button>
+  </div>
+
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script>
+// ═══════════════════════ STORAGE ═══════════════════════
+const SK_CFG='aias_cfg_v1',SK_LOG='aias_postlog_v1';
+let CFG={
+  clientId:'',blogId:'',imgbbKey:'',
+  customLogo:'', // base64 dataURL
+  aiKeys:[], // [{id,key,model,modelCustom,enabled}]
+  defaultTone:'warm, confident, conversational — like a knowledgeable friend',
+  humanize:true,
+  proxyUrl:'',
+};
+let postLog=[];
+let accessToken=null;
+
+function v(id){return document.getElementById(id)?.value?.trim()||'';}
+function set(id,val){const el=document.getElementById(id);if(el)el.value=val||'';}
+function toast(msg,type='i'){
+  const t=document.createElement('div');t.className='toast '+type;
+  const icons={s:'✓ ',e:'✕ ',i:'ℹ ',w:'⚠ '};
+  t.textContent=(icons[type]||'')+msg;
+  document.getElementById('toasts').appendChild(t);
+  setTimeout(()=>{t.style.transition='opacity .3s';t.style.opacity='0';setTimeout(()=>t.remove(),320);},3400);
+}
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelectorAll('.nav-pill').forEach(p=>p.classList.remove('active'));
+  const map={dashboard:0,compose:1,settings:2};
+  document.querySelectorAll('.nav-pill')[map[name]]?.classList.add('active');
+  if(name==='settings')renderAiKeysList();
+  if(name==='compose')renderThumbnail();
+}
+function loadAll(){
+  try{const p=JSON.parse(localStorage.getItem(SK_CFG)||'{}');if(p.data)CFG={...CFG,...p.data};}catch(e){}
+  try{const p=JSON.parse(localStorage.getItem(SK_LOG)||'{}');if(p.data)postLog=p.data;}catch(e){}
+  applyConfigToUI();
+}
+function saveAll(){
+  try{localStorage.setItem(SK_CFG,JSON.stringify({data:CFG,ts:Date.now()}));}catch(e){}
+  try{localStorage.setItem(SK_LOG,JSON.stringify({data:postLog,ts:Date.now()}));}catch(e){}
+}
+function saveSettings(){
+  CFG.clientId=v('cfg-clientid');CFG.blogId=v('cfg-blogid');CFG.imgbbKey=v('cfg-imgbb');
+  CFG.defaultTone=v('cfg-default-tone')||CFG.defaultTone;
+  CFG.humanize=(document.getElementById('cfg-humanize')?.value||'yes')==='yes';
+  CFG.proxyUrl=v('cfg-proxy-url');
+  saveAll();updateDashStats();toast('Settings saved ✓','s');
+}
+function applyConfigToUI(){
+  set('cfg-clientid',CFG.clientId);set('cfg-blogid',CFG.blogId);set('cfg-imgbb',CFG.imgbbKey);
+  set('cfg-default-tone',CFG.defaultTone);set('cfg-proxy-url',CFG.proxyUrl);
+  if(document.getElementById('cfg-humanize'))document.getElementById('cfg-humanize').value=CFG.humanize===false?'no':'yes';
+  refreshLogoPreviews();
+  renderAiKeysList();
+  updateClaudeStatus();
+  updateDashStats();
+}
+function updateDashStats(){
+  document.getElementById('st-posts').textContent=postLog.length;
+  document.getElementById('st-keys').textContent=(CFG.aiKeys||[]).filter(k=>k.enabled!==false&&sanitizeKey(k.key)).length;
+  document.getElementById('st-blogger').textContent=(CFG.blogId&&accessToken)?'Ready':(CFG.blogId?'Signed out':'Not set');
+  const bs=document.getElementById('blogger-status-text');
+  if(bs){
+    if(CFG.blogId&&accessToken)bs.innerHTML='<span style="color:var(--green)">✓ Connected</span> — Blog ID set and signed in. Ready to publish.';
+    else if(CFG.blogId)bs.textContent='Blog ID is set — sign in with Google to enable publishing.';
+    else bs.textContent='Sign in and set your Blog ID in Settings to enable auto-posting.';
+  }
+}
+
+// ═══════════════════════ LOGO ═══════════════════════
+function onLogoFileChange(ev){
+  const file=ev.target.files?.[0];if(!file)return;
+  if(file.size>2*1024*1024){toast('Logo image too large — please use one under 2MB','w');return;}
+  const reader=new FileReader();
+  reader.onload=()=>{CFG.customLogo=reader.result;saveAll();refreshLogoPreviews();toast('Logo uploaded ✓','s');};
+  reader.onerror=()=>toast('Could not read that image file','e');
+  reader.readAsDataURL(file);
+}
+function removeLogo(){CFG.customLogo='';saveAll();refreshLogoPreviews();toast('Logo removed','i');}
+function refreshLogoPreviews(){
+  const has=!!CFG.customLogo;
+  const tb=document.getElementById('topbar-logo');
+  if(has){tb.innerHTML='<img src="'+CFG.customLogo+'"> <span style="font-size:.85rem">AI Article Studio</span>';}
+  else{tb.innerHTML='🤖 AI Article Studio';}
+  [['dash-logo-preview','dash-logo-empty'],['cfg-logo-preview','cfg-logo-empty']].forEach(([imgId,emptyId])=>{
+    const img=document.getElementById(imgId),empty=document.getElementById(emptyId);
+    if(!img)return;
+    if(has){img.src=CFG.customLogo;img.style.display='block';if(empty)empty.style.display='none';}
+    else{img.style.display='none';if(empty)empty.style.display='block';}
+  });
+}
+
+// ═══════════════════════ GOOGLE OAUTH / BLOGGER ═══════════════════════
+function handleAuth(){
+  if(accessToken){signOut();return;}
+  if(!CFG.clientId){toast('Enter your Google OAuth Client ID in Settings first','e');showPage('settings');return;}
+  const client=google.accounts.oauth2.initTokenClient({
+    client_id:CFG.clientId,
+    scope:'https://www.googleapis.com/auth/blogger',
+    callback:r=>{
+      if(r.error){toast('Auth error: '+r.error,'e');return;}
+      accessToken=r.access_token;
+      document.getElementById('auth-dot').className='on';
+      document.getElementById('auth-label').textContent='Signed in';
+      document.getElementById('auth-label').style.color='var(--green)';
+      document.getElementById('auth-btn').textContent='Sign out';
+      document.getElementById('dash-auth-btn').textContent='Sign out';
+      toast('Signed in ✓','s');
+      updateDashStats();
+    }
+  });
+  client.requestAccessToken();
+}
+function signOut(){
+  if(accessToken){try{google.accounts.oauth2.revoke(accessToken,()=>{});}catch(e){}}
+  accessToken=null;
+  document.getElementById('auth-dot').className='';
+  document.getElementById('auth-label').textContent='Not signed in';
+  document.getElementById('auth-label').style.color='var(--muted2)';
+  document.getElementById('auth-btn').textContent='Sign in';
+  document.getElementById('dash-auth-btn').textContent='Sign in';
+  toast('Signed out','i');
+  updateDashStats();
+}
+async function postToBlogger(){
+  if(!accessToken){toast('Sign in first','e');showPage('settings');return;}
+  if(!CFG.blogId){toast('Add your Blog ID in Settings first','e');showPage('settings');return;}
+  const title=v('a-title');if(!title){toast('Enter a title first','w');return;}
+  let html=document.getElementById('post-body').value;
+  if(!html.trim()){toast('Write or generate the article body first','w');return;}
+  const insertThumb=(document.getElementById('post-insert-thumb')?.value||'yes')==='yes';
+  const hostedThumb=v('thumb-hosted-url');
+  if(insertThumb&&hostedThumb){
+    html='<div><img src="'+hostedThumb+'" alt="'+title.replace(/"/g,'&quot;')+'" style="max-width:100%;height:auto;border-radius:10px;margin-bottom:18px"></div>\n'+html;
+  }
+  const status=document.getElementById('post-status')?.value||'DRAFT';
+  const labels=v('a-labels').split(',').map(s=>s.trim()).filter(Boolean);
+  const statusEl=document.getElementById('publish-status');
+  if(statusEl){statusEl.textContent='Publishing…';statusEl.className='gen-status loading';}
+  try{
+    let url='https://www.googleapis.com/blogger/v3/blogs/'+CFG.blogId+'/posts/';
+    if(status!=='LIVE')url+='?isDraft=true';
+    const body={kind:'blogger#post',blog:{id:CFG.blogId},title,content:html,labels:labels.length?labels:undefined};
+    const res=await fetch(url,{method:'POST',headers:{'Authorization':'Bearer '+accessToken,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!res.ok)throw new Error('Blogger '+res.status+': '+(await res.text()).slice(0,300));
+    const post=await res.json();
+    postLog.unshift({title,url:post.url||'',date:new Date().toISOString(),status});
+    saveAll();updateDashStats();
+    if(statusEl){statusEl.textContent='✓ Published as '+status+(post.url?' — '+post.url:'');statusEl.className='gen-status done';}
+    toast('Published ✓','s');
+  }catch(e){
+    if(statusEl){statusEl.textContent='✗ '+e.message;statusEl.className='gen-status error';}
+    toast('Publish failed — see status message','e');
+  }
+}
+
+// ═══════════════════════ imgbb UPLOAD ═══════════════════════
+async function uploadCanvasToImgbb(cv){
+  if(!CFG.imgbbKey){toast('Add your imgbb API key in Settings first','e');showPage('settings');return null;}
+  try{
+    const fd=new FormData();
+    fd.append('key',CFG.imgbbKey);
+    fd.append('image',cv.toDataURL('image/jpeg',.9).split(',')[1]);
+    const res=await fetch('https://api.imgbb.com/1/upload',{method:'POST',body:fd});
+    const json=await res.json();
+    if(json.success)return json.data.url;
+    toast('imgbb upload failed: '+(json.error?.message||'unknown error'),'e');
+    return null;
+  }catch(e){
+    toast('imgbb upload failed: '+e.message+' — canvas may be tainted by a cross-origin background image','e');
+    return null;
+  }
+}
+
+// ═══════════════════════ THUMBNAIL CANVAS ═══════════════════════
+function loadImageSafe(src){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.crossOrigin='anonymous';
+    img.onload=()=>resolve(img);
+    img.onerror=()=>reject(new Error('Could not load image (blocked by CORS or invalid URL)'));
+    img.src=src;
+  });
+}
+function wrapLines(ctx,text,maxWidth){
+  const words=text.split(/\s+/);const lines=[];let cur='';
+  for(const w of words){
+    const test=cur?cur+' '+w:w;
+    if(ctx.measureText(test).width>maxWidth&&cur){lines.push(cur);cur=w;}
+    else cur=test;
+  }
+  if(cur)lines.push(cur);
+  return lines;
+}
+async function renderThumbnail(){
+  const cv=document.getElementById('thumb-canvas');
+  const ctx=cv.getContext('2d');
+  const W=cv.width,H=cv.height;
+  const statusEl=document.getElementById('thumb-status');
+  if(statusEl){statusEl.textContent='Rendering…';statusEl.className='gen-status loading';}
+  try{
+    const c1=v('tb-color1')||'#12071f',c2=v('tb-color2')||'#3a0d5c';
+    const bgUrl=v('tb-bg-url');
+    ctx.clearRect(0,0,W,H);
+    let bgDrawn=false;
+    if(bgUrl){
+      try{
+        const img=await loadImageSafe(bgUrl);
+        const ir=img.width/img.height,cr=W/H;
+        let sw,sh,sx,sy;
+        if(ir>cr){sh=img.height;sw=sh*cr;sx=(img.width-sw)/2;sy=0;}
+        else{sw=img.width;sh=sw/cr;sx=0;sy=(img.height-sh)/2;}
+        ctx.drawImage(img,sx,sy,sw,sh,0,0,W,H);
+        bgDrawn=true;
+      }catch(e){toast('Background image failed to load — using gradient instead ('+e.message+')','w');}
+    }
+    if(!bgDrawn){
+      const grad=ctx.createLinearGradient(0,0,W,H);
+      grad.addColorStop(0,c1);grad.addColorStop(1,c2);
+      ctx.fillStyle=grad;ctx.fillRect(0,0,W,H);
+    }
+    // Darken bottom for text legibility
+    const overlay=ctx.createLinearGradient(0,H*0.35,0,H);
+    overlay.addColorStop(0,'rgba(0,0,0,0)');overlay.addColorStop(1,'rgba(0,0,0,.72)');
+    ctx.fillStyle=overlay;ctx.fillRect(0,0,W,H);
+    // Title text
+    const showTitle=(document.getElementById('tb-show-title')?.value||'yes')==='yes';
+    if(showTitle){
+      const title=v('a-title')||'Untitled Article';
+      ctx.fillStyle='#fff';
+      ctx.font='900 '+Math.round(W*0.052)+'px "Barlow Condensed",sans-serif';
+      ctx.textAlign='left';ctx.textBaseline='alphabetic';
+      const maxWidth=W*0.86;
+      const lines=wrapLines(ctx,title.toUpperCase(),maxWidth).slice(0,3);
+      const lineHeight=W*0.062;
+      let y=H-W*0.09-(lines.length-1)*lineHeight;
+      for(const line of lines){ctx.fillText(line,W*0.05,y);y+=lineHeight;}
+    }
+    // Logo overlay
+    const pos=document.getElementById('tb-logo-pos')?.value||'br';
+    if(pos!=='none'&&CFG.customLogo){
+      try{
+        const logo=await loadImageSafe(CFG.customLogo);
+        const targetH=H*0.11;
+        const targetW=targetH*(logo.width/logo.height);
+        const pad=W*0.035;
+        let lx,ly;
+        if(pos==='br'){lx=W-targetW-pad;ly=H-targetH-pad;}
+        else if(pos==='bl'){lx=pad;ly=H-targetH-pad;}
+        else if(pos==='tr'){lx=W-targetW-pad;ly=pad;}
+        else{lx=pad;ly=pad;}
+        ctx.save();
+        ctx.globalAlpha=.95;
+        ctx.drawImage(logo,lx,ly,targetW,targetH);
+        ctx.restore();
+      }catch(e){/* logo failed to draw, non-fatal */}
+    }
+    if(statusEl){statusEl.textContent='✓ Thumbnail rendered';statusEl.className='gen-status done';}
+  }catch(e){
+    if(statusEl){statusEl.textContent='✗ '+e.message;statusEl.className='gen-status error';}
+  }
+}
+function downloadThumbnail(){
+  const cv=document.getElementById('thumb-canvas');
+  const a=document.createElement('a');a.download='thumbnail.jpg';a.href=cv.toDataURL('image/jpeg',.9);a.click();
+}
+async function uploadThumbnailToImgbb(){
+  const cv=document.getElementById('thumb-canvas');
+  const statusEl=document.getElementById('thumb-status');
+  if(statusEl){statusEl.textContent='Uploading…';statusEl.className='gen-status loading';}
+  const url=await uploadCanvasToImgbb(cv);
+  if(url){
+    set('thumb-hosted-url',url);
+    if(statusEl){statusEl.textContent='✓ Uploaded';statusEl.className='gen-status done';}
+    toast('Thumbnail uploaded ✓','s');
+  }else if(statusEl){statusEl.textContent='✗ Upload failed';statusEl.className='gen-status error';}
+}
+
+// ═══════════════════════ AI ENGINE (NVIDIA NIM only, multi-key fallback, via proxy) ═══════════════════════
+// Strips anything that isn't a plain visible ASCII character — smart quotes,
+// zero-width spaces, stray newlines, etc. copied in by accident are exactly
+// what triggers Safari's cryptic "The string did not match the expected
+// pattern" header error.
+function sanitizeKey(s){return (s||'').replace(/[^\x21-\x7E]/g,'');}
+const AI_MODELS=[
+  ['deepseek-ai/deepseek-v4-flash','DeepSeek V4 Flash (fast & cheap)'],
+  ['deepseek-ai/deepseek-v4-pro','DeepSeek V4 Pro (best quality, 1M ctx)'],
+  ['deepseek-ai/deepseek-r1','DeepSeek R1 (reasoning)'],
+  ['meta/llama-3.3-70b-instruct','Llama 3.3 70B Instruct'],
+  ['meta/llama-3.1-405b-instruct','Llama 3.1 405B Instruct'],
+  ['qwen/qwen2.5-72b-instruct','Qwen 2.5 72B Instruct'],
+  ['nvidia/llama-3.1-nemotron-70b-instruct','Nemotron 70B Instruct'],
+  ['mistralai/mixtral-8x22b-instruct-v0.1','Mixtral 8x22B Instruct'],
+];
+function genAiId(){return 'ai'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function hasAnyAiKey(){return (CFG.aiKeys||[]).some(k=>k.enabled!==false&&sanitizeKey(k.key));}
+function addAiKey(){
+  if(!CFG.aiKeys)CFG.aiKeys=[];
+  CFG.aiKeys.push({id:genAiId(),key:'',model:'deepseek-ai/deepseek-v4-flash',modelCustom:'',enabled:true});
+  saveAll();renderAiKeysList();updateClaudeStatus();
+}
+function removeAiKey(id){
+  CFG.aiKeys=(CFG.aiKeys||[]).filter(k=>k.id!==id);
+  saveAll();renderAiKeysList();updateClaudeStatus();
+}
+function moveAiKey(id,dir){
+  const arr=CFG.aiKeys||[];const i=arr.findIndex(k=>k.id===id);
+  const j=i+dir;if(i<0||j<0||j>=arr.length)return;
+  [arr[i],arr[j]]=[arr[j],arr[i]];
+  saveAll();renderAiKeysList();
+}
+function updateAiKey(id,field,value){
+  const k=(CFG.aiKeys||[]).find(x=>x.id===id);if(!k)return;
+  if(field==='key')value=sanitizeKey(value);
+  k[field]=value;
+  saveAll();
+  if(field==='model')renderAiKeysList();
+  updateClaudeStatus();
+}
+function modelOptionsHtml(selected){
+  let html=AI_MODELS.map(([val,label])=>`<option value="${val}" ${val===selected?'selected':''}>${label}</option>`).join('');
+  html+=`<option value="__custom__" ${selected==='__custom__'?'selected':''}>Custom model ID…</option>`;
+  return html;
+}
+function renderAiKeysList(){
+  const wrap=document.getElementById('ai-keys-list');if(!wrap)return;
+  const list=CFG.aiKeys||[];
+  if(!list.length){wrap.innerHTML='<div style="font-size:.78rem;color:var(--muted2);padding:8px 0">No API keys added yet. Click "➕ Add NVIDIA API Key" below.</div>';return;}
+  wrap.innerHTML=list.map((k,i)=>`<div class="ai-key-row">
+      <div class="form-row">
+        <div>
+          <label>Priority ${i+1} · NVIDIA API Key</label>
+          <input type="password" value="${(k.key||'').replace(/"/g,'&quot;')}" placeholder="nvapi-…" oninput="updateAiKey('${k.id}','key',this.value)">
+        </div>
+        <div>
+          <label>Model</label>
+          <select onchange="updateAiKey('${k.id}','model',this.value)">${modelOptionsHtml(k.model)}</select>
+        </div>
+      </div>
+      <div class="form-row" style="${k.model==='__custom__'?'':'display:none'}">
+        <div>
+          <label>Custom Model ID</label>
+          <input type="text" value="${(k.modelCustom||'').replace(/"/g,'&quot;')}" placeholder="e.g. mistralai/mistral-large-2-instruct" oninput="updateAiKey('${k.id}','modelCustom',this.value)">
+        </div>
+        <div></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:4px">
+        <label style="display:flex;gap:4px;align-items:center;font-size:.74rem;color:var(--muted2)">
+          <input type="checkbox" ${k.enabled!==false?'checked':''} onchange="updateAiKey('${k.id}','enabled',this.checked)"> Enabled
+        </label>
+        <button class="btn-ghost btn-xs" onclick="moveAiKey('${k.id}',-1)" ${i===0?'disabled':''}>⬆</button>
+        <button class="btn-ghost btn-xs" onclick="moveAiKey('${k.id}',1)" ${i===list.length-1?'disabled':''}>⬇</button>
+        <button class="btn-ghost btn-xs" onclick="testAiKey('${k.id}')">🔌 Test</button>
+        <button class="btn-red btn-xs" onclick="removeAiKey('${k.id}')">🗑 Remove</button>
+        <span id="ai-test-result-${k.id}" style="font-size:.7rem;color:var(--muted2)"></span>
+      </div>
+    </div>`).join('');
+}
+function resolveModel(k){return k.model==='__custom__'?(k.modelCustom||''):k.model;}
+function updateClaudeStatus(){
+  const list=(CFG.aiKeys||[]).filter(k=>k.enabled!==false&&sanitizeKey(k.key));
+  const hasKey=list.length>0;
+  const badge1=document.getElementById('ds-status-badge');
+  const badge2=document.getElementById('ds-cfg-badge');
+  const statusEl=document.getElementById('ds-engine-status');
+  if(hasKey){
+    if(badge1)badge1.innerHTML='<span class="badge" style="background:rgba(114,9,183,.25);color:#b47ffa">✓ READY</span>';
+    if(badge2){badge2.textContent='✓ '+list.length+' KEY'+(list.length>1?'S':'')+' CONFIGURED';badge2.style.background='rgba(114,9,183,.25)';badge2.style.color='#b47ffa';}
+    if(statusEl)statusEl.innerHTML=list.length+' AI key'+(list.length>1?'s':'')+' configured (with automatic fallback) — ready to generate articles.';
+  }else{
+    if(badge1)badge1.innerHTML='<span class="badge">NOT CONFIGURED</span>';
+    if(badge2){badge2.textContent='NOT CONFIGURED';badge2.style.background='';badge2.style.color='';}
+    if(statusEl)statusEl.textContent='Add at least one NVIDIA API key in Settings → AI Engine.';
+  }
+  const btn=document.getElementById('ds-gen-btn');if(btn)btn.style.opacity=hasKey?'1':'0.5';
+  updateDashStats();
+}
+
+// Wraps fetch with a timeout so a hung request surfaces as a clear message
+// instead of the browser's generic, undiagnosable "Load failed".
+async function fetchWithTimeout(url,opts,timeoutMs){
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),timeoutMs);
+  try{
+    return await fetch(url,{...opts,signal:ctrl.signal});
+  }catch(e){
+    if(e.name==='AbortError')throw new Error('Timed out after '+(timeoutMs/1000)+'s — NVIDIA may be overloaded, or the proxy URL/CORS setup may be wrong');
+    throw new Error('Network error reaching proxy: '+e.message+' — check the Proxy URL in Settings and that it is deployed and live');
+  }finally{
+    clearTimeout(timer);
+  }
+}
+function proxyUrl(){return CFG.proxyUrl||'';}
+async function testProviderOnce(k){
+  const key=sanitizeKey(k.key);
+  const model=resolveModel(k);
+  if(!key)throw new Error('No API key');
+  if(!model)throw new Error('No model selected');
+  if(!proxyUrl())throw new Error('No proxy URL set in Settings');
+  const r=await fetchWithTimeout(proxyUrl()+'?provider=nvidia',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model,messages:[{role:'user',content:'Reply only: "AI Article Studio OK"'}],temperature:1,top_p:.95,max_tokens:30,stream:false})},20000);
+  const raw=await r.text();
+  let d;try{d=JSON.parse(raw);}catch{d=null;}
+  const msg=d?.choices?.[0]?.message;
+  if(r.ok&&msg?.content)return msg.content;
+  throw new Error(d?.error?.message||raw.slice(0,200)||('HTTP '+r.status));
+}
+async function testAiKey(id){
+  const k=(CFG.aiKeys||[]).find(x=>x.id===id);if(!k)return;
+  const res=document.getElementById('ai-test-result-'+id);
+  if(res){res.textContent='Testing…';res.style.color='var(--muted2)';}
+  try{
+    const reply=await testProviderOnce(k);
+    if(res){res.textContent='✓ '+reply;res.style.color='var(--green)';}
+  }catch(e){
+    if(res){res.textContent='✗ '+e.message;res.style.color='var(--red)';}
+  }
+}
+async function testAllAiKeys(){
+  const list=CFG.aiKeys||[];
+  const res=document.getElementById('ai-test-all-result');
+  if(!list.length){if(res)res.textContent='⚠ No API keys added yet.';toast('Add an API key first','w');showPage('settings');return;}
+  if(res)res.textContent='Testing '+list.length+' key(s)…';
+  toast('Testing all AI keys…','i');
+  let okCount=0;
+  for(const k of list){
+    await testAiKey(k.id);
+    const r=document.getElementById('ai-test-result-'+k.id);
+    if(r&&r.textContent.startsWith('✓'))okCount++;
+  }
+  if(res)res.textContent=okCount+' / '+list.length+' key(s) working ✓';
+  toast(okCount+' / '+list.length+' AI keys working','s');
+}
+function isTransientAIError(status,bodyText){
+  if(status===429||status===503||status===502)return true;
+  const t=(bodyText||'').toLowerCase();
+  return t.includes('resourceexhausted')||t.includes('resource exhausted')||t.includes('worker local total request limit')||t.includes('overloaded')||t.includes('rate limit');
+}
+async function callProviderWithRetry(k,messages,attempt=1){
+  const key=sanitizeKey(k.key);
+  const model=resolveModel(k);
+  if(!key||!model)throw new Error('A configured key is missing its API key or model');
+  const r=await fetchWithTimeout(proxyUrl()+'?provider=nvidia',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model,messages,temperature:1,top_p:.95,max_tokens:4000,stream:false})},60000);
+  if(!r.ok){
+    const e=await r.text();
+    if(isTransientAIError(r.status,e)&&attempt<3){
+      await new Promise(res=>setTimeout(res,1000*Math.pow(2,attempt-1)));
+      return callProviderWithRetry(k,messages,attempt+1);
+    }
+    throw new Error('['+model+'] HTTP '+r.status+': '+e.slice(0,300));
+  }
+  const d=await r.json();if(d.error)throw new Error('['+model+'] '+(d.error.message||JSON.stringify(d.error)));
+  return d.choices?.[0]?.message?.content||'';
+}
+// Tries each enabled key in priority order, falling back to the next one on
+// any failure (bad key, quota exhausted, transient overload, etc).
+async function callAI(messages){
+  const list=(CFG.aiKeys||[]).filter(k=>k.enabled!==false&&sanitizeKey(k.key));
+  if(!list.length)throw new Error('No API key configured');
+  if(!proxyUrl())throw new Error('No proxy URL set in Settings');
+  const errors=[];
+  for(const k of list){
+    try{return await callProviderWithRetry(k,messages);}
+    catch(e){console.warn('[AI fallback] key failed, trying next:',e.message);errors.push(e.message);}
+  }
+  throw new Error('All '+list.length+' AI key(s) failed:\n'+errors.join('\n'));
+}
+
+// ═══════════════════════ ARTICLE GENERATION ═══════════════════════
+const AI_LENGTH_WORDS={short:400,medium:800,long:1300,xl:1800};
+const HUMANIZE_SYSTEM_PROMPT=`You are an experienced human blogger and journalist, not an AI assistant. Write the article the way a skilled, opinionated human writer would for a real publication. Follow these rules closely:
+- Vary sentence length and rhythm — mix short, punchy sentences with longer, flowing ones. Avoid a repetitive cadence.
+- Use contractions naturally where a human would (it's, don't, you'll, that's).
+- Do NOT use these overused AI phrases/clichés anywhere: "in today's fast-paced world", "in conclusion", "in summary", "furthermore", "moreover", "it's important to note", "it's worth noting", "overall", "delve into", "navigate", "landscape", "realm", "tapestry", "testament to", "unlock", "elevate", "game-changer", "in the world of", "when it comes to".
+- Don't over-rely on bullet points or numbered lists — prefer flowing prose, and use a list only where a genuine list of short items is the clearest way to present something.
+- Vary how paragraphs open — don't start consecutive paragraphs the same way.
+- Include at least one specific, concrete detail, example, or mild opinion so it reads as genuinely written by someone who thought about the topic, not generated.
+- Prefer active voice.
+- Do not summarize what you're about to say before saying it, and do not summarize what you just said afterward.
+- Write like you're explaining this well to a curious friend, not drafting a corporate report.`;
+function buildArticleMessages(){
+  const title=v('a-title');
+  const topic=v('a-topic')||title;
+  const audience=v('a-audience')||'general readers';
+  const tone=v('a-tone')||CFG.defaultTone||'warm, confident, conversational';
+  const keywords=v('a-keywords');
+  const lengthKey=document.getElementById('a-length')?.value||'medium';
+  const words=AI_LENGTH_WORDS[lengthKey]||800;
+  const userPrompt=`Write a blog article.
+Title: "${title}"
+Topic / angle: ${topic}
+Target audience: ${audience}
+Tone: ${tone}
+${keywords?('Naturally work in these keywords/phrases where relevant (don\'t force them): '+keywords+'\n'):''}Target length: approximately ${words} words.
+
+Formatting requirements:
+- Return ONLY the article body as clean HTML — no <!DOCTYPE>, <html>, <head>, or <body> tags
+- Use <h2> for section headings, <p> for paragraphs, <strong> for emphasis, and <ul><li> only where a short genuine list is the clearest option
+- Open with a short, engaging paragraph that hooks the reader — no heading before it
+- End with a natural closing thought rather than a formal wrap-up`;
+  const messages=[{role:'user',content:userPrompt}];
+  if(CFG.humanize!==false)messages.unshift({role:'system',content:HUMANIZE_SYSTEM_PROMPT});
+  return messages;
+}
+async function generateArticle(){
+  if(!hasAnyAiKey()){toast('Add an NVIDIA API key in Settings first','w');showPage('settings');return;}
+  const title=v('a-title');if(!title){toast('Enter a title first','w');return;}
+  const statusEl=document.getElementById('article-gen-status');
+  if(statusEl){statusEl.textContent='Writing article…';statusEl.className='gen-status loading';}
+  const btn=document.getElementById('ds-gen-btn');if(btn)btn.disabled=true;
+  try{
+    const messages=buildArticleMessages();
+    const article=await callAI(messages);
+    document.getElementById('post-body').value=article.trim();
+    updateSEO();
+    if(statusEl){statusEl.textContent='✓ Article generated';statusEl.className='gen-status done';}
+    toast('Article written ✓','s');
+  }catch(e){
+    if(statusEl){statusEl.textContent='✗ '+e.message;statusEl.className='gen-status error';}
+    toast('Generation failed — see status message','e');
+  }finally{
+    if(btn)btn.disabled=false;
+  }
+}
+function clearArticle(){document.getElementById('post-body').value='';updateSEO();}
+function copyArticleHtml(){
+  navigator.clipboard.writeText(document.getElementById('post-body').value);
+  toast('HTML copied ✓','s');
+}
+function updateSEO(){
+  const text=document.getElementById('post-body').value;
+  const plain=text.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+  const words=plain?plain.split(' ').length:0;
+  document.getElementById('seo-words').textContent=words;
+  document.getElementById('seo-read').textContent=Math.max(1,Math.round(words/200));
+  document.getElementById('seo-chars').textContent=text.length;
+}
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='post-body')updateSEO();});
+
+// ═══════════════════════ INIT ═══════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  loadAll();
+  updateSEO();
+});
+</script>
+</body>
+</html>
